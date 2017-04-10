@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+	<title>Assignment 4</title>
+</head>
+<body>
+	<h1>Security and Privacy Assessment of Assignments 2 and 3</h1>
+	<h2>Introduction</h2>
+	<p>This assessment tests the security of the web application for mapchat (Assignments 2 and 3) for Ethan Pailes. This web application consists the /sendLocation api which "submits checkins from any domain", a /latest.json api which "returns the last known location of a login" and root index which displays an html file containing the checkins. Vulnerabilities are considered for each api.</p>
+	<h2>Methodology</h2>
+	<p>Initially testing was carried out "black box" style i.e. sending data without looking at the source code. With little success I moved to "white box" testing. After looking at the code I was able to find various vulnerabilities. After exhausting the apparent vulnerabilities I moved to a web app scanner (vega), which unfortunately revealed no new vulnerabilities</p>
+	<h2>Abstract of Findings</h2>
+	<p>There were four vulnerabilities found in this security assessment. In the first, the site can be broken if the message sent contains code. The second vulnerability allows any user, from any domain to access the information in the app. This is a significant privacy issue because a malicious user who aught not to have access may have access to potentially sensitive information. The third vulnerability permits a user to submit a login and recieve access to the data associated with a different login. The fourth vulnerability is only relevant if the data stored exceeds 500 MB.</p>
+	<h2>Issues found</h2>
+	<ol>
+	<li><p><strong>Cross-Site Scripting</strong></p>
+
+		<ul>
+		</li>Affects POST /sendLocation API and GET /</li>
+		<li>Risk level: Moderate</li>
+		<li> Normally, Cross-Site Scripting would be categorized as a high-risk vulnerability, however because there was some protection against it, I consider it moderate-risk. Tags are stripped from any input into the /sendLocation API however with a quick google search I was able to bypass this. The standard XSS injection format, something like: <div><img src= "code1.png", alt = "code no XSS" /></div>produced the following:  <div><img src="ScreenShot1.png", alt= "no XSS screen shot"/></div> If however if I curled using this format: <div><img src = "code2.png", alt = "XSS code"></div>  the following was produced: <img src= "ScreenShot2.png", alt = "XSS screen shot"/> exhibiting a more subtle XSS vulnerability.
+ 		</li>
+
+		<li>To combat this vulnerability I would recommend using the javascript escape() function to ensure that no script can get through</li>
+		</ul>
+	</li>
+
+	<li><p><strong>Insecure Cross Origin Resource Access Control</strong></p>
+		<ul>
+		<li>Affects entire app</li>
+		<li>Risk level: High</li>
+		<li>This is a higher level vulnerability in the sense that, with the following line of code: <code> res.header('Access-Control-Allow-Origin', '*'); </code> any client from any domain can access the data stored in this app. In other words, there is no authorization. This is bad practice. Although it happens to be that no sensitive information is stored in this app right now, in the real world this could very well be the case. If anyone can access the information, that allows potentially malicious clients to access potentially sensitive information.
+		</li>
+		<li>To compbat against this vulnerability I would recommend implementing authorization with a login so that only those with a valid login can access the data</li> 
+		</ul>
+	</li>
+
+	<li><p><strong>Login Injection</strong></p>
+		<ul>
+		<li>Affects /latest.json</li>
+		<li>Risk level: High</li>
+		<li>This vulnerability affects the /latest.json api in the way that a client can access the information from a login without entering that login into the request. If the snippet <code>[$ne]</code> is placed before a given login, the information from a different login is displayed on the page.<div><img src = "latest_vul.png", alt = "latest.json vulnerability"/></div> Notice how the login in the request and the login displayed on the page differ. This again is less relevant because there is no sensitive information stored however if it were the case that sensitive information was stored, a malicious client could access information about a login that was not his own. This is therefore a security and privacy issue
+		</li>
+		<li> To combat against this vulnerability, I would sanitize the input so that only standard text is considered.</li>
+		</ul>
+	</li>	
+
+	<li><p><strong>Mongo Max Size Limit</strong></p>
+		<ul>
+		<li>Affects /sendLocation</li>
+		<li>Risk level: low</li>
+		<li> This vulnerability is a fringe case vulnerability for the purposes of our assignment however in the real world it would be a more relevant problem. The app can handle 500 MB of data which is ample storage when considering the demands of the app at the present time. If there were thousands of entries, eventually the database would crash and not be able to handle anymore data.</li>
+		<li>To resolve this problem, one would have to purchase more storage via the mongo website.</li>	
+	</li>	
+	<h2>Conclusion</h2>
+	<p>Overall the security of this app was good. Many errors were handled and the code was very tight both in logic and in structure. Additionally, a few of the vulnerabilities were inherent to the assignment, such as the cross origin access and the mongo lab size limit. As for future recommendations, I advise to address some of the vulnerablities to make the app suitable for a more real world application </p>
+
+
+</body>
+</html>
